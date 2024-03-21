@@ -25,55 +25,59 @@ function color(id, r ,g ,b) {
     return item;
 }
 
-fetch('https://api-colores-full-no3c.onrender.com/colores')
-.then(res => res.json())
-.then(colores => {
-    colores.forEach(({ id, r, g, b }) => {
-        contenedorColores.appendChild(color(id, r, g, b));
-    })
-});
+function main() {
+    fetch('https://api-colores-full-no3c.onrender.com/colores')
+    .then(res => res.json())
+    .then(colores => {
+        colores.forEach(({ id, r, g, b }) => {
+            contenedorColores.appendChild(color(id, r, g, b));
+        })
+    });
 
-formulario.addEventListener('submit', e => {
-    e.preventDefault();
-    mensajeError.classList.remove('visible');
+    formulario.addEventListener('submit', e => {
+        e.preventDefault();
+        mensajeError.classList.remove('visible');
 
-    let textoError = 'No puede estar en blanco';
+        let textoError = 'No puede estar en blanco';
 
-    if (inputTexto.value.trim() !== '') {
-        let numeros = inputTexto.value.split(',').map(n => Number(n));
-        let valido = numeros.length === 3;
+        if (inputTexto.value.trim() !== '') {
+            let numeros = inputTexto.value.split(',').map(n => Number(n));
+            let valido = numeros.length === 3;
 
-        if (valido) {
-            numeros.forEach(n => valido = valido && n >= 0 && n <= 255 && n - parseInt(n) === 0);
-        
             if (valido) {
-                let [ r, g, b] = numeros;
+                numeros.forEach(n => valido = valido && n >= 0 && n <= 255 && n - parseInt(n) === 0);
+            
+                if (valido) {
+                    let [ r, g, b] = numeros;
 
-                return fetch('https://api-colores-full-no3c.onrender.com/colores/nuevo', {
-                    method: 'POST',
-                    body: JSON.stringify({ r, g, b }),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(res => res.json())
-                .then(({ id, error }) => {
-                    if (!error) {
-                        contenedorColores.appendChild(color(id, r, g, b));
+                    return fetch('https://api-colores-full-no3c.onrender.com/colores/nuevo', {
+                        method: 'POST',
+                        body: JSON.stringify({ r, g, b }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(({ id, error }) => {
+                        if (!error) {
+                            contenedorColores.appendChild(color(id, r, g, b));
 
-                        return inputTexto.value = '';
-                    }
+                            return inputTexto.value = '';
+                        }
 
-                    console.error('Error');
-                });
+                        console.error('Error');
+                    });
 
 
+                }
             }
+
+            textoError = 'Deben ser tres números entre 0 y 255 separados por comas';
         }
 
-        textoError = 'Deben ser tres números entre 0 y 255 separados por comas';
-    }
+        mensajeError.innerText = textoError;
+        mensajeError.classList.add('visible');
+    })
+}
 
-    mensajeError.innerText = textoError;
-    mensajeError.classList.add('visible');
-})
+document.addEventListener('DOMContentLoaded', main);
